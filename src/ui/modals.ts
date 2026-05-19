@@ -1,18 +1,20 @@
 import { appState } from "../state.js";
 import { findContactById } from "../storage/index.js";
 
+type CleanupFn = () => void;
+
 // Вспомогательная функция: ловушка фокуса
-function setupFocusTrap(modal, onCloseCallback) {
+function setupFocusTrap(modal: HTMLElement, onCloseCallback: () => void): CleanupFn {
   const focusable = modal.querySelectorAll(
     'input, button, [tabindex]:not([tabindex="-1"])',
   );
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const lastFocused = document.activeElement;
+  const first = focusable[0] as HTMLElement | undefined;
+  const last = focusable[focusable.length - 1] as HTMLElement | undefined;
+  const lastFocused = document.activeElement as HTMLElement | null;
 
   first?.focus();
 
-  function onKey(e) {
+  function onKey(e: KeyboardEvent) {
     if (e.key === "Escape") {
       onCloseCallback();
       return;
@@ -21,10 +23,10 @@ function setupFocusTrap(modal, onCloseCallback) {
 
     if (!e.shiftKey && document.activeElement === last) {
       e.preventDefault();
-      first.focus();
+      first?.focus();
     } else if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
-      last.focus();
+      last?.focus();
     }
   }
 
@@ -39,23 +41,27 @@ function setupFocusTrap(modal, onCloseCallback) {
 
 // --- ЭКСПОРТИРУЕМЫЕ ФУНКЦИИ ---
 
-export function openEditModal(id) {
+export function openEditModal(id: string): CleanupFn | undefined {
   const contact = findContactById(id);
   if (!contact) return;
 
   appState.editingId = id;
-  document.querySelector("#editName").value = contact.name;
-  document.querySelector("#editVacancy").value = contact.vacancy;
-  document.querySelector("#editPhone").value = contact.phone;
+  const nameInput = document.querySelector("#editName") as HTMLInputElement;
+  const vacancyInput = document.querySelector("#editVacancy") as HTMLInputElement;
+  const phoneInput = document.querySelector("#editPhone") as HTMLInputElement;
+  
+  if (nameInput) nameInput.value = contact.name;
+  if (vacancyInput) vacancyInput.value = contact.vacancy;
+  if (phoneInput) phoneInput.value = contact.phone;
 
   const modal = document.querySelector("#editModal");
   if (!modal) return;
 
   modal.classList.add("modal--visible");
-  modal.hidden = false;
+  (modal as HTMLElement).hidden = false;
 
   // Запускаем ловушку фокуса, передавая ссылку на closeEditModal
-  return setupFocusTrap(modal, closeEditModal);
+  return setupFocusTrap(modal as HTMLElement, closeEditModal);
 }
 
 export function closeEditModal() {
@@ -63,22 +69,25 @@ export function closeEditModal() {
   if (!modal) return;
 
   modal.classList.remove("modal--visible");
-  modal.hidden = true;
+  (modal as HTMLElement).hidden = true;
   appState.editingId = null;
-  document.querySelector("#editForm")?.reset();
+  const form = document.querySelector("#editForm") as HTMLFormElement | null;
+  form?.reset();
 }
 
-export function openSearchModal() {
+export function openSearchModal(): CleanupFn | undefined {
   const modal = document.querySelector("#searchModal");
   if (!modal) return;
 
   modal.classList.add("modal--visible");
-  modal.hidden = false;
-  document.querySelector("#searchInput").value = "";
-  document.querySelector("#searchResults").innerHTML = "";
-  document.querySelector("#searchInput")?.focus();
+  (modal as HTMLElement).hidden = false;
+  const searchInput = document.querySelector("#searchInput") as HTMLInputElement;
+  const searchResults = document.querySelector("#searchResults");
+  if (searchInput) searchInput.value = "";
+  if (searchResults) searchResults.innerHTML = "";
+  searchInput?.focus();
 
-  return setupFocusTrap(modal, closeSearchModal);
+  return setupFocusTrap(modal as HTMLElement, closeSearchModal);
 }
 
 export function closeSearchModal() {
@@ -86,5 +95,5 @@ export function closeSearchModal() {
   if (!modal) return;
 
   modal.classList.remove("modal--visible");
-  modal.hidden = true;
+  (modal as HTMLElement).hidden = true;
 }

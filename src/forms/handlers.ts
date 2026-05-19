@@ -1,3 +1,4 @@
+import type { Contact, NewContact } from "../types.js";
 import { appState } from "../state.js";
 import {
   addContact,
@@ -9,31 +10,42 @@ import { renderAlphabetIndex, renderContacts } from "../ui/index.js";
 import { closeEditModal } from "../ui/modals.js";
 import { validateForm } from "./validator.js";
 
-export function handleAddContact(e) {
+export function handleAddContact(e: Event) {
   e.preventDefault();
   if (!validateForm("name", "vacancy", "phone")) return;
 
-  const newContact = {
+  const nameInput = document.querySelector("#name") as HTMLInputElement;
+  const vacancyInput = document.querySelector("#vacancy") as HTMLInputElement;
+  const phoneInput = document.querySelector("#phone") as HTMLInputElement;
+
+  const newContact: Contact = {
     id: crypto.randomUUID(),
-    name: document.querySelector("#name").value.trim(),
-    vacancy: document.querySelector("#vacancy").value.trim(),
-    phone: document.querySelector("#phone").value.trim(),
+    name: nameInput.value.trim(),
+    vacancy: vacancyInput.value.trim(),
+    phone: phoneInput.value.trim(),
   };
 
   addContact(newContact);
   renderAlphabetIndex();
   renderContacts(appState.filteredContacts);
-  document.querySelector("#contactForm").reset();
+  const form = document.querySelector("#contactForm") as HTMLFormElement | null;
+  form?.reset();
 }
 
-export function handleEditContact(e) {
+export function handleEditContact(e: Event) {
   e.preventDefault();
   if (!validateForm("editName", "editVacancy", "editPhone")) return;
 
+  const nameInput = document.querySelector("#editName") as HTMLInputElement;
+  const vacancyInput = document.querySelector("#editVacancy") as HTMLInputElement;
+  const phoneInput = document.querySelector("#editPhone") as HTMLInputElement;
+
+  if (!appState.editingId) return;
+
   const updated = updateContact(appState.editingId, {
-    name: document.querySelector("#editName").value.trim(),
-    vacancy: document.querySelector("#editVacancy").value.trim(),
-    phone: document.querySelector("#editPhone").value.trim(),
+    name: nameInput.value.trim(),
+    vacancy: vacancyInput.value.trim(),
+    phone: phoneInput.value.trim(),
   });
 
   if (updated) {
@@ -43,7 +55,7 @@ export function handleEditContact(e) {
   }
 }
 
-export function handleDeleteContact(id) {
+export function handleDeleteContact(id: string) {
   if (!confirm("Are you sure you want to delete this contact?")) return;
   if (deleteContactById(id)) {
     renderAlphabetIndex();

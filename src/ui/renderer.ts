@@ -1,3 +1,4 @@
+import type { Contact } from "../types.js";
 import { appState } from "../state.js";
 import { escapeHtml } from "../utils.js";
 
@@ -27,7 +28,7 @@ export function renderAlphabetIndex() {
     .join("");
 }
 
-export function renderContacts(contactsToShow = null) {
+export function renderContacts(contactsToShow: Contact[] | null = null) {
   const container = document.querySelector("#contactsList");
   if (!container) return;
 
@@ -56,7 +57,7 @@ export function renderContacts(contactsToShow = null) {
     .join("");
 }
 
-export function renderSearchResults(results) {
+export function renderSearchResults(results: Contact[]) {
   const container = document.querySelector("#searchResults");
   if (!container) return;
 
